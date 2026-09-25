@@ -1,0 +1,35 @@
+# Exemplo de uso da ferramenta como portão de qualidade em uma esteira de CI:
+# a cada alteração no backlog, a auditoria roda sozinha e reprova o build
+# se a aderência ficar abaixo da meta definida em config.json.
+name: Auditoria de qualidade
+
+on:
+  push:
+    paths: ['artefatos/**', 'checklists/**', 'src/**']
+  pull_request:
+  schedule:
+    - cron: '0 12 * * 1' # toda segunda-feira, para reavaliar prazos e escalonar
+
+jobs:
+  auditoria:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Testes da ferramenta
+        run: npm test
+
+      - name: Auditoria dos artefatos
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: node audita.js auditar --exigir-meta
+
+      - name: Publicar relatório
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-auditoria
+          path: relatorios/ultimo-relatorio.html

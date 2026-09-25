@@ -1,0 +1,131 @@
+{
+  "id": "CHK-HU-DOR-v1",
+  "nome": "Checklist de Qualidade — História de Usuário (Definition of Ready)",
+  "artefato": "História de Usuário",
+  "versao": "1.0",
+  "norma": "ISO/IEC 25010 (adequação funcional) + Definition of Ready do time",
+  "classificacao": [
+    { "min": 90, "resultado": "Aprovado" },
+    { "min": 70, "resultado": "Aprovado com ressalvas" },
+    { "min": 0, "resultado": "Reprovado" }
+  ],
+  "itens": [
+    {
+      "id": "IT-01",
+      "categoria": "Identificação",
+      "descricao": "Possui identificador único no padrão HU-000",
+      "regra": "identificador",
+      "peso": 1,
+      "severidade": "Média",
+      "acaoCorretiva": "Renomear a história seguindo o padrão HU-000 definido no guia de backlog."
+    },
+    {
+      "id": "IT-02",
+      "categoria": "Identificação",
+      "descricao": "Título objetivo, presente e com até 80 caracteres",
+      "regra": "titulo",
+      "peso": 1,
+      "severidade": "Baixa",
+      "acaoCorretiva": "Reescrever o título de forma objetiva, com verbo de ação e até 80 caracteres."
+    },
+    {
+      "id": "IT-03",
+      "categoria": "Narrativa",
+      "descricao": "Narrativa no formato Como / Quero / Para que",
+      "regra": "narrativa",
+      "peso": 3,
+      "severidade": "Crítica",
+      "acaoCorretiva": "Escrever a narrativa nas três linhas: Como <papel>, Quero <ação>, Para que <benefício>."
+    },
+    {
+      "id": "IT-04",
+      "categoria": "Narrativa",
+      "descricao": "Papel do usuário identificado (não genérico como 'usuário')",
+      "regra": "papelEspecifico",
+      "peso": 1,
+      "severidade": "Média",
+      "acaoCorretiva": "Substituir o papel genérico pelo perfil real (aluno, tutor, coordenador...)."
+    },
+    {
+      "id": "IT-05",
+      "categoria": "Testabilidade",
+      "descricao": "Possui no mínimo 3 critérios de aceitação",
+      "regra": "quantidadeCriterios",
+      "peso": 3,
+      "severidade": "Crítica",
+      "acaoCorretiva": "Detalhar os critérios de aceitação cobrindo fluxo principal, alternativo e de exceção."
+    },
+    {
+      "id": "IT-06",
+      "categoria": "Testabilidade",
+      "descricao": "Critérios escritos no formato Dado / Quando / Então",
+      "regra": "formatoCriterios",
+      "peso": 2,
+      "severidade": "Alta",
+      "acaoCorretiva": "Reescrever cada critério com contexto (Dado), evento (Quando) e resultado esperado (Então)."
+    },
+    {
+      "id": "IT-07",
+      "categoria": "Testabilidade",
+      "descricao": "Livre de termos ambíguos e não verificáveis",
+      "regra": "ambiguidade",
+      "peso": 2,
+      "severidade": "Alta",
+      "acaoCorretiva": "Trocar termos subjetivos por valores mensuráveis (ex.: 'rápido' -> 'em até 2 segundos')."
+    },
+    {
+      "id": "IT-08",
+      "categoria": "Planejamento",
+      "descricao": "Estimativa registrada na escala de Fibonacci (1,2,3,5,8,13)",
+      "regra": "estimativa",
+      "peso": 2,
+      "severidade": "Alta",
+      "acaoCorretiva": "Estimar a história em planning poker e registrar o valor no cabeçalho."
+    },
+    {
+      "id": "IT-09",
+      "categoria": "Planejamento",
+      "descricao": "Prioridade definida (Alta, Média ou Baixa)",
+      "regra": "prioridade",
+      "peso": 1,
+      "severidade": "Média",
+      "acaoCorretiva": "Definir a prioridade junto ao Product Owner e registrar no cabeçalho."
+    },
+    {
+      "id": "IT-10",
+      "categoria": "Planejamento",
+      "descricao": "Responsável técnico identificado",
+      "regra": "responsavel",
+      "peso": 1,
+      "severidade": "Média",
+      "acaoCorretiva": "Atribuir um responsável técnico nominal à história."
+    },
+    {
+      "id": "IT-11",
+      "categoria": "Rastreabilidade",
+      "descricao": "Vinculada a um requisito funcional (RF-000)",
+      "regra": "rastreabilidade",
+      "peso": 2,
+      "severidade": "Alta",
+      "acaoCorretiva": "Vincular a história ao requisito funcional correspondente na matriz de rastreabilidade."
+    },
+    {
+      "id": "IT-12",
+      "categoria": "Rastreabilidade",
+      "descricao": "Dependências declaradas explicitamente (ou 'Nenhuma')",
+      "regra": "dependencias",
+      "peso": 1,
+      "severidade": "Baixa",
+      "acaoCorretiva": "Declarar as dependências da história ou registrar explicitamente 'Nenhuma'."
+    },
+    {
+      "id": "IT-13",
+      "categoria": "Regras de negócio",
+      "descricao": "Seção de regras de negócio preenchida e numerada (RN-00)",
+      "regra": "regrasNegocio",
+      "peso": 2,
+      "severidade": "Alta",
+      "acaoCorretiva": "Documentar as regras de negócio numeradas como RN-01, RN-02..."
+    }
+  ]
+}

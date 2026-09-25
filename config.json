@@ -1,0 +1,46 @@
+{
+  "projeto": "Plataforma EAD — Backlog do Sprint 12",
+  "auditor": "Célula de Qualidade (auditoria automatizada)",
+  "checklist": "checklists/hu-dor.json",
+  "metaAderencia": 90,
+  "pastaArtefatos": "artefatos",
+  "slaDias": {
+    "Crítica": 1,
+    "Alta": 3,
+    "Média": 7,
+    "Baixa": 15
+  },
+  "escalonamento": [
+    {
+      "nivel": 1,
+      "papel": "Responsável técnico do artefato",
+      "contato": "responsavel-do-artefato"
+    },
+    {
+      "nivel": 2,
+      "papel": "Líder técnico",
+      "contato": "lider.tecnico@plataforma-ead.com.br"
+    },
+    {
+      "nivel": 3,
+      "papel": "Gerente de Qualidade",
+      "contato": "gerencia.qa@plataforma-ead.com.br"
+    },
+    {
+      "nivel": 4,
+      "papel": "Comitê da Qualidade / Diretoria de Produto",
+      "contato": "comite.qualidade@plataforma-ead.com.br"
+    }
+  ],
+  "equipe": {
+    "Ana Duarte": "ana.duarte@plataforma-ead.com.br",
+    "Bruno Lima": "bruno.lima@plataforma-ead.com.br",
+    "Carla Menezes": "carla.menezes@plataforma-ead.com.br",
+    "Diego Alves": "diego.alves@plataforma-ead.com.br"
+  },
+  "responsavelPadrao": "Product Owner",
+  "emailPadrao": "product.owner@plataforma-ead.com.br",
+  "copiaSempre": [
+    "qa@plataforma-ead.com.br"
+  ]
+}

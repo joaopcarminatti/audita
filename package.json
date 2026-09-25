@@ -1,0 +1,19 @@
+{
+  "name": "audita",
+  "version": "1.0.0",
+  "description": "Ferramenta de auditoria automatizada de qualidade de artefatos de software",
+  "main": "audita.js",
+  "scripts": {
+    "auditar": "node audita.js auditar",
+    "painel": "node audita.js painel",
+    "vigiar": "node audita.js vigiar",
+    "ncs": "node audita.js ncs",
+    "prazos": "node audita.js prazos",
+    "resetar": "node audita.js resetar",
+    "test": "node --test \"testes/**/*.test.js\""
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

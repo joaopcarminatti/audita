@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Audita — painel de qualidade</title>
+<style>{{CSS}}
+.acoes{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 4px}
+button{font:inherit;font-size:14px;padding:9px 16px;border:1px solid var(--tinta);background:var(--tinta);
+  color:#fff;cursor:pointer;border-radius:2px}
+button.secundario{background:transparent;color:var(--tinta)}
+button:disabled{opacity:.45;cursor:progress}
+button:focus-visible,select:focus-visible{outline:2px solid var(--frio);outline-offset:2px}
+select{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--linha);background:#fff;border-radius:2px}
+.aviso{font-size:13.5px;color:var(--apagado);margin-left:auto}
+.filtros{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.filtro{font-size:13px;padding:5px 12px;border:1px solid var(--linha);background:#fff;cursor:pointer;border-radius:2px;color:var(--apagado)}
+.filtro[aria-pressed="true"]{border-color:var(--tinta);color:var(--tinta);font-weight:600}
+.nc{background:var(--superficie);border:1px solid var(--linha);border-left:4px solid var(--linha);margin-bottom:8px}
+.nc-topo{display:flex;gap:14px;align-items:baseline;padding:13px 16px;cursor:pointer;flex-wrap:wrap}
+.nc-id{font-weight:700;font-variant-numeric:tabular-nums}
+.nc-txt{flex:1;min-width:220px}
+.nc-detalhe{padding:0 16px 16px;border-top:1px solid var(--linha-fraca);display:none}
+.nc.aberto .nc-detalhe{display:block}
+.hist{margin:10px 0 0;padding:0;list-style:none;font-size:13.5px}
+.hist li{padding:6px 0 6px 14px;border-left:2px solid var(--linha);color:var(--apagado)}
+.hist b{color:var(--tinta)}
+.vencida{background:#FBEDEB;color:var(--reprovado);font-size:12px;font-weight:600;padding:2px 7px;border-radius:2px}
+.com{font-size:13.5px;padding:9px 0;border-bottom:1px solid var(--linha-fraca);display:flex;gap:14px;flex-wrap:wrap}
+.com a{color:var(--frio)}
+.vazio{color:var(--apagado);font-size:14px;padding:18px 0}
+.nc-topo:focus-visible{outline:2px solid var(--frio);outline-offset:-2px}
+</style>
+</head>
+<body><div class="folha">
+
+<div class="cabecalho">
+  <div>
+    <h1>Painel de qualidade</h1>
+    <p class="sub" id="contexto">Carregando…</p>
+  </div>
+  <div class="meta" id="meta"></div>
+</div>
+
+<div class="acoes">
+  <button id="btn-auditar">Executar auditoria</button>
+  <button id="btn-prazos" class="secundario">Verificar prazos</button>
+  <select id="dias" aria-label="Simular avanço no calendário">
+    <option value="0">data de hoje</option>
+    <option value="2">+2 dias</option>
+    <option value="5">+5 dias</option>
+    <option value="10">+10 dias</option>
+    <option value="20">+20 dias</option>
+  </select>
+  <a class="aviso" href="/relatorio" target="_blank">Abrir relatório completo</a>
+</div>
+<p class="sub" id="status" role="status"></p>
+
+<div class="selo-area" id="selo-area"></div>
+
+<h2>Evolução entre auditorias</h2>
+<div id="evolucao"></div>
+
+<div class="duas">
+  <div>
+    <h2>Aderência por artefato</h2>
+    <div id="artefatos"></div>
+  </div>
+  <div>
+    <h2>Aderência por categoria</h2>
+    <div id="categorias"></div>
+  </div>
+</div>
+
+<h2>Não-conformidades</h2>
+<div class="filtros">
+  <button class="filtro" data-f="pendentes" aria-pressed="true">Pendentes</button>
+  <button class="filtro" data-f="vencidas" aria-pressed="false">Vencidas</button>
+  <button class="filtro" data-f="fechadas" aria-pressed="false">Encerradas</button>
+  <button class="filtro" data-f="todas" aria-pressed="false">Todas</button>
+</div>
+<div id="ncs"></div>
+
+<h2>Comunicações emitidas</h2>
+<div id="comunicacoes"></div>
+
+<p class="rodape">Audita · auditoria automatizada de artefatos. Os itens, pesos e severidades vêm do checklist;
+prazos e matriz de escalonamento vêm de config.json.</p>
+</div>
+
+<script>
+const CORES_SEV = { 'Crítica':'#A62B1F', 'Alta':'#B4690E', 'Média':'#7A6A19', 'Baixa':'#3F5A66' };
+let estado = null, filtro = 'pendentes';
+
+const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const data = (iso) => new Date(iso).toLocaleDateString('pt-BR');
+const dataHora = (iso) => new Date(iso).toLocaleString('pt-BR');
+const cor = (p) => p >= 90 ? '#16624C' : p >= 70 ? '#B4690E' : '#A62B1F';
+const dias = () => Number(document.getElementById('dias').value);
+
+async function carregar(rota, metodo = 'GET') {
+  rota = rota || ('/api/estado?dias=' + dias());
+  const status = document.getElementById('status');
+  document.querySelectorAll('button').forEach((b) => (b.disabled = true));
+  status.textContent = metodo === 'GET' ? 'Atualizando…' : 'Executando…';
+  try {
+    const resposta = await fetch(rota, {
+      method: metodo,
+      headers: { 'Content-Type': 'application/json' },
+      body: metodo === 'GET' ? undefined : JSON.stringify({ dias: dias() }),
+    });
+    if (!resposta.ok) throw new Error('A ferramenta respondeu com erro ' + resposta.status);
+    estado = await resposta.json();
+    desenhar();
+    status.textContent = estado.mensagem || '';
+  } catch (e) {
+    status.textContent = 'Não foi possível concluir: ' + e.message + '. Verifique o terminal em que a ferramenta está rodando.';
+  } finally {
+    document.querySelectorAll('button').forEach((b) => (b.disabled = false));
+  }
+}
+
+function desenhar() {
+  const a = estado.auditoria, r = a.resumo, i = estado.indicadores;
+  document.getElementById('meta').innerHTML =
+    'Projeto <b>' + esc(a.projeto) + '</b><br>Última leitura <b>' + dataHora(a.executadaEm) + '</b>' +
+    (estado.dataSimulada ? '<br><span style="color:#B4690E">calendário simulado: ' + data(estado.dataSimulada) + '</span>' : '');
+
+  const meta = '<span class="meta-linha" style="color:' + (r.atingiuMeta ? 'var(--aprovado)' : 'var(--ressalva)') +
+    '">meta de ' + r.meta + '% ' + (r.atingiuMeta ? 'atingida' : 'não atingida') + '</span>';
+
+  document.getElementById('selo-area').innerHTML =
+    '<div class="selo" style="color:' + cor(r.aderencia) + '"><div>' +
+      '<div class="num">' + r.aderencia + '%</div><div class="rot">aderência</div>' +
+      '<div class="res">' + esc(r.resultado) + '</div></div></div>' +
+    '<div class="numeros">' +
+      num(r.artefatosAuditados, 'artefatos auditados') +
+      num(r.itensVerificados, 'itens verificados') +
+      num(r.pontosObtidos + '<span style="color:var(--apagado);font-size:18px">/' + r.pontosPossiveis + '</span>', 'pontos de conformidade') +
+      num(i.pendentes, 'NCs pendentes') +
+      num(i.vencidas, 'NCs com prazo vencido') +
+      num(i.fechadas, 'NCs encerradas') +
+      num(i.tempoMedioResolucao === null ? '—' : i.tempoMedioResolucao, 'dias até a resolução (média)') +
+    '</div>';
+
+  document.getElementById('contexto').innerHTML =
+    esc(a.checklist.nome) + ' · versão ' + esc(a.checklist.versao) + ' ' + meta;
+
+  const linha = estado.historico || [];
+  document.getElementById('evolucao').innerHTML = linha.length < 2
+    ? '<p class="vazio">A evolução aparece a partir da segunda auditoria. Execute novamente após corrigir um artefato.</p>'
+    : '<div class="grafico">' + linha.slice(-12).map((e) =>
+        '<div class="col" title="' + dataHora(e.em) + ' — ' + e.aderencia + '%">' +
+        '<div class="valor">' + e.aderencia + '%</div>' +
+        '<div class="haste" style="height:' + Math.max(3, Math.round(e.aderencia)) + '%;background:' + cor(e.aderencia) + '"></div>' +
+        '<div class="rot">' + data(e.em) + '</div></div>'
+      ).join('') + '</div>' +
+      (function (v) {
+        if (v === null) return '';
+        if (v === 0) return '<p class="sub">A aderência se manteve estável na última execução.</p>';
+        return '<p class="sub">Variação na última execução: <b style="color:' +
+          (v > 0 ? 'var(--aprovado)' : 'var(--reprovado)') + '">' + (v > 0 ? '+' : '') + v + ' p.p.</b></p>';
+      })(linha[linha.length - 1].variacao);
+
+  document.getElementById('categorias').innerHTML =
+    '<table><thead><tr><th>Categoria</th><th>Aderência</th><th class="num">NCs</th></tr></thead><tbody>' +
+    a.porCategoria.slice().sort((x, y) => x.percentual - y.percentual).map((c) =>
+      '<tr><td>' + esc(c.categoria) + '</td>' +
+      '<td><span class="celula-barra"><span class="barra"><i style="width:' + Math.max(2, c.percentual) + '%;background:' + cor(c.percentual) + '"></i></span>' +
+      '<b style="font-variant-numeric:tabular-nums">' + c.percentual + '%</b></span></td>' +
+      '<td class="num">' + c.naoConformes + '</td></tr>'
+    ).join('') + '</tbody></table>';
+
+  document.getElementById('artefatos').innerHTML =
+    '<table><thead><tr><th>Artefato</th><th>Responsável</th><th>Aderência</th>' +
+    '<th class="num">Pontos</th><th class="num">NCs</th><th>Resultado</th></tr></thead><tbody>' +
+    a.artefatos.map((x) =>
+      '<tr><td><b>' + esc(x.artefato) + '</b><span class="evidencia">' + esc(x.titulo) + '</span></td>' +
+      '<td>' + esc(x.responsavel || '—') + '</td>' +
+      '<td><span class="celula-barra"><span class="barra"><i style="width:' + Math.max(2, x.percentual) + '%;background:' + cor(x.percentual) + '"></i></span>' +
+      '<b style="font-variant-numeric:tabular-nums">' + x.percentual + '%</b></span></td>' +
+      '<td class="num">' + x.obtido + '/' + x.total + '</td>' +
+      '<td class="num">' + x.verificacoes.filter((v) => !v.conforme).length + '</td>' +
+      '<td style="color:' + cor(x.percentual) + ';font-weight:600">' + esc(x.resultado) + '</td></tr>'
+    ).join('') + '</tbody></table>';
+
+  desenharNcs();
+
+  const coms = estado.comunicacoes.slice(-12).reverse();
+  document.getElementById('comunicacoes').innerHTML = coms.length
+    ? coms.map((c) =>
+        '<div class="com"><span style="color:var(--apagado);white-space:nowrap">' + dataHora(c.enviadoEm) + '</span>' +
+        '<span style="flex:1;min-width:240px"><b>' + esc(c.assunto) + '</b><span class="evidencia">para ' + esc(c.para.join(', ')) + ' · ' + esc(c.canal) + '</span></span>' +
+        '<a href="/' + c.arquivo + '" target="_blank">ver mensagem</a></div>'
+      ).join('')
+    : '<p class="vazio">Nenhuma comunicação emitida. Execute a auditoria para notificar os responsáveis.</p>';
+}
+
+function num(valor, rotulo) {
+  return '<div class="numero"><div class="v">' + valor + '</div><div class="r">' + rotulo + '</div></div>';
+}
+
+function desenharNcs() {
+  const agora = new Date(estado.dataSimulada || Date.now());
+  const pendente = (n) => n.status === 'Aberta' || n.status === 'Em correção';
+  const lista = estado.ncs.filter((n) =>
+    filtro === 'todas' ? true :
+    filtro === 'pendentes' ? pendente(n) :
+    filtro === 'vencidas' ? pendente(n) && new Date(n.prazo) < agora :
+    n.status === 'Fechada'
+  );
+
+  document.getElementById('ncs').innerHTML = lista.length
+    ? lista.map((n) => {
+        const venc = pendente(n) && new Date(n.prazo) < agora;
+        return '<div class="nc" style="border-left-color:' + (n.status === 'Fechada' ? '#16624C' : CORES_SEV[n.severidade]) + '" data-id="' + n.id + '">' +
+          '<div class="nc-topo" role="button" tabindex="0" aria-expanded="false" aria-label="Detalhar ' + n.id + '">' +
+            '<span class="nc-id">' + n.id + '</span>' +
+            '<span class="nc-txt"><b>' + esc(n.artefato) + ' · ' + n.itemId + '</b> — ' + esc(n.descricaoItem) +
+              '<span class="evidencia">' + esc(n.evidencia) + '</span></span>' +
+            '<span class="chip" style="color:' + CORES_SEV[n.severidade] + '">' + n.severidade + '</span>' +
+            '<span class="chip" style="color:' + (n.status === 'Fechada' ? '#16624C' : '#3F5A66') + '">' + esc(n.status) + ' · N' + n.nivelEscalonamento + '</span>' +
+            (venc ? '<span class="vencida">prazo vencido</span>' : '<span class="sub">prazo ' + data(n.prazo) + '</span>') +
+          '</div>' +
+          '<div class="nc-detalhe">' +
+            '<p class="sub" style="margin-top:12px"><b>Ação corretiva:</b> ' + esc(n.acaoCorretiva) + '<br>' +
+            '<b>Responsável:</b> ' + esc(n.responsavel) + ' · <b>Aberta em:</b> ' + data(n.abertaEm) +
+            (n.reincidencias ? ' · <b>reincidência nº ' + n.reincidencias + '</b>' : '') + '</p>' +
+            (pendente(n) ? '<button class="secundario" data-assumir="' + n.id + '">Assumir correção</button>' : '') +
+            '<ul class="hist">' + n.historico.map((h) =>
+              '<li><b>' + esc(h.evento) + '</b> · ' + dataHora(h.em) + '<br>' + esc(h.detalhe) + ' <i>(' + esc(h.autor) + ')</i></li>'
+            ).join('') + '</ul>' +
+          '</div></div>';
+      }).join('')
+    : '<p class="vazio">Nenhuma não-conformidade neste filtro.</p>';
+}
+
+function alternar(topo) {
+  const aberto = topo.parentElement.classList.toggle('aberto');
+  topo.setAttribute('aria-expanded', String(aberto));
+}
+
+document.addEventListener('keydown', (e) => {
+  const topo = e.target.closest('.nc-topo');
+  if (topo && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    alternar(topo);
+  }
+});
+
+document.addEventListener('click', async (e) => {
+  const topo = e.target.closest('.nc-topo');
+  if (topo && !e.target.closest('[data-assumir]')) alternar(topo);
+
+  const f = e.target.closest('.filtro');
+  if (f) {
+    filtro = f.dataset.f;
+    document.querySelectorAll('.filtro').forEach((b) => b.setAttribute('aria-pressed', String(b === f)));
+    desenharNcs();
+  }
+
+  const assumir = e.target.closest('[data-assumir]');
+  if (assumir) {
+    await fetch('/api/nc/assumir', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: assumir.dataset.assumir, dias: dias() }),
+    });
+    carregar();
+  }
+});
+
+document.getElementById('btn-auditar').addEventListener('click', () => carregar('/api/auditar', 'POST'));
+document.getElementById('btn-prazos').addEventListener('click', () => carregar('/api/prazos', 'POST'));
+document.getElementById('dias').addEventListener('change', () => carregar());
+carregar();
+</script>
+</body></html>
