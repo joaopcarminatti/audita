@@ -1,5 +1,12 @@
 # Audita — auditoria automatizada de qualidade
 
+> **Sobre o build vermelho na aba Actions.** Os artefatos em `artefatos/` têm defeitos propositais —
+> eles existem para a ferramenta ter não-conformidades reais para encontrar. A auditoria roda como
+> portão de qualidade (`--exigir-meta`) e reprova o build quando a aderência fica abaixo da meta de
+> 90% definida em `config.json`. Ou seja: **a falha do job é o resultado esperado**, é a prova de que
+> o portão funciona, e não um erro de execução. O relatório completo fica publicado nos artefatos da
+> execução.
+
 Ferramenta desenvolvida do zero (Node.js puro, sem bibliotecas externas e sem planilha) para auditar
 artefatos de um processo de software, calcular o percentual de aderência a um checklist, registrar as
 não-conformidades (NC), acompanhá-las até o encerramento, escalonar prazos vencidos e comunicar os
@@ -63,7 +70,7 @@ painel e no relatório se a qualidade do backlog está subindo ou caindo entre a
 
 ## Qualidade da própria ferramenta
 
-- `npm test` roda 33 testes automatizados (`node:test`, sem dependências) cobrindo as regras do checklist,
+- `npm test` roda 34 testes automatizados (`node:test`, sem dependências) cobrindo as regras do checklist,
   o cálculo de aderência e as faixas de classificação, o ciclo de vida da NC, o escalonamento por prazo,
   a reincidência e as comunicações geradas. Os testes rodam em pasta temporária e não tocam a base real.
 - A ferramenta valida a própria configuração antes de auditar: regra inexistente, peso inválido,
@@ -73,17 +80,17 @@ painel e no relatório se a qualidade do backlog está subindo ou caindo entre a
 
 ## Roteiro do vídeo (3 minutos)
 
-Antes de gravar: `node audita.js resetar --confirmar`. Ajuste a divisão conforme o tamanho da equipe —
-o importante é que todos apareçam e falem.
+Antes de gravar: `node audita.js resetar --confirmar`. Cada integrante entra duas vezes, para que os três
+apareçam e falem.
 
 | Tempo | Quem | O que mostrar |
 |---|---|---|
-| 0:00–0:25 | Integrante 1 | Apresenta o time, o problema (auditoria manual em planilha) e o artefato escolhido; abre `checklists/hu-dor.json` mostrando itens, pesos e severidades |
-| 0:25–1:05 | Integrante 2 | Roda `node audita.js auditar`: aderência por artefato, aderência global de 71,8% contra a meta de 90%, categoria mais frágil e 17 NCs com prazo e responsável |
-| 1:05–1:45 | Integrante 3 | Abre o painel, expande uma NC crítica mostrando evidência, ação corretiva e histórico, e abre uma das mensagens de comunicação |
-| 1:45–2:20 | Integrante 4 | Com o calendário simulado em +5 dias, clica em "Verificar prazos": as NCs vencidas sobem para N2 e a comunicação passa a incluir o líder técnico |
-| 2:20–2:50 | Integrante 5 | Corrige a HU-003 (`node audita.js corrigir HU-003`) e reaudita: as 5 NCs são encerradas automaticamente e a aderência sobe para 80,9%, com o gráfico de evolução no painel |
-| 2:50–3:00 | Todos | Fecham com o relatório HTML aberto e a conclusão |
+| 0:00–0:25 | Felipe Braga | Apresenta o time, o problema (auditoria manual em planilha) e o artefato escolhido; abre `checklists/hu-dor.json` mostrando itens, pesos e severidades |
+| 0:25–1:05 | Gustavo Nery | Roda `node audita.js auditar`: aderência por artefato, aderência global de 71,8% contra a meta de 90%, categoria mais frágil e 17 NCs com prazo e responsável |
+| 1:05–1:45 | João Pedro Carminatti | Abre o painel, expande uma NC crítica mostrando evidência, ação corretiva e histórico, e abre uma das mensagens de comunicação |
+| 1:45–2:15 | Felipe Braga | Com o calendário simulado em +5 dias, clica em "Verificar prazos": as NCs vencidas sobem para N2 e a comunicação passa a incluir o líder técnico |
+| 2:15–2:50 | Gustavo Nery | Corrige a HU-003 (`node audita.js corrigir HU-003`) e reaudita: as 5 NCs são encerradas automaticamente e a aderência sobe para 80,9%, com o gráfico de evolução no painel |
+| 2:50–3:00 | João Pedro Carminatti (com os três em tela) | Fecha com o relatório HTML aberto e a conclusão |
 
 Alternativa mais fluida para a parte final: deixar `node audita.js vigiar` rodando e salvar a correção do
 artefato na frente da câmera — a reauditoria dispara sozinha e as NCs se encerram na tela.

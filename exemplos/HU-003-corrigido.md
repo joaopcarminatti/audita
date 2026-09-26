@@ -2,7 +2,7 @@
 
 **ID:** HU-003
 **Épico:** Acompanhamento pedagógico
-**Responsável:** Carla Menezes
+**Responsável:** João Pedro Carminatti
 **Prioridade:** Alta
 **Estimativa:** 5
 **Requisito:** RF-033

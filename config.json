@@ -18,29 +18,28 @@
     },
     {
       "nivel": 2,
-      "papel": "Líder técnico",
-      "contato": "lider.tecnico@plataforma-ead.com.br"
+      "papel": "Líder técnico — Gustavo Nery",
+      "contato": "gustavo.nery@pucpr.edu.br"
     },
     {
       "nivel": 3,
-      "papel": "Gerente de Qualidade",
-      "contato": "gerencia.qa@plataforma-ead.com.br"
+      "papel": "Gerente de Qualidade — Felipe Braga",
+      "contato": "felipe.braga@pucpr.edu.br"
     },
     {
       "nivel": 4,
-      "papel": "Comitê da Qualidade / Diretoria de Produto",
-      "contato": "comite.qualidade@plataforma-ead.com.br"
+      "papel": "Comitê da Qualidade — banca avaliadora",
+      "contato": "comite.qualidade@pucpr.edu.br"
     }
   ],
   "equipe": {
-    "Ana Duarte": "ana.duarte@plataforma-ead.com.br",
-    "Bruno Lima": "bruno.lima@plataforma-ead.com.br",
-    "Carla Menezes": "carla.menezes@plataforma-ead.com.br",
-    "Diego Alves": "diego.alves@plataforma-ead.com.br"
+    "Felipe Braga": "felipe.braga@pucpr.edu.br",
+    "João Pedro Carminatti": "joao.carminatti@pucpr.edu.br",
+    "Gustavo Nery": "gustavo.nery@pucpr.edu.br"
   },
   "responsavelPadrao": "Product Owner",
-  "emailPadrao": "product.owner@plataforma-ead.com.br",
+  "emailPadrao": "product.owner@pucpr.edu.br",
   "copiaSempre": [
-    "qa@plataforma-ead.com.br"
+    "qa@pucpr.edu.br"
   ]
 }

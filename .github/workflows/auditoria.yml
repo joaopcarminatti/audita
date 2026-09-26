@@ -33,3 +33,26 @@ jobs:
         with:
           name: relatorio-auditoria
           path: relatorios/ultimo-relatorio.html
+
+      - name: Explicar o resultado do portão
+        if: always()
+        run: |
+          META=$(node -p "require('./config.json').metaAderencia")
+          cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+          ## Por que este build fica vermelho
+
+          Os artefatos em \`artefatos/\` contêm **defeitos propositais**: eles existem para
+          demonstrar a ferramenta encontrando não-conformidades reais, e não para passar na
+          auditoria.
+
+          O passo \`node audita.js auditar --exigir-meta\` funciona como **portão de qualidade**:
+          ele reprova o build sempre que a aderência global fica abaixo da meta de **${META}%**
+          definida em \`config.json\`.
+
+          Portanto, **a falha deste job é o comportamento esperado** — é a prova de que o portão
+          está ativo e cumprindo sua função. Não se trata de erro de execução da ferramenta.
+
+          O relatório completo da auditoria (aderência por artefato e por categoria, lista de NCs
+          com evidência, severidade, responsável e prazo) está publicado no artefato
+          **relatorio-auditoria** desta execução.
+          EOF
